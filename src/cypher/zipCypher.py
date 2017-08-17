@@ -5,6 +5,7 @@ zip文件密码破解例子
 '''
 import zipfile
 import argparse
+import shutil
 
 def zipDecrption(zipFileName, fileName):
     file = zipfile.ZipFile(zipFileName)
@@ -17,6 +18,8 @@ def zipDecrption(zipFileName, fileName):
             break
         except Exception as e:
             print(e)
+    shutil.rmtree('tmp')
+    passwordFile.close()
     file.close()
 if __name__ == '__main__':
     argparser = argparse.ArgumentParser('zip decrption.')
