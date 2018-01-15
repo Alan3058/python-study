@@ -10,3 +10,5 @@ python版本:3.6.2
 2. randomPassword.py:随机密码生产  
 3. zipCypher.py:zip压缩包解密  
 4. assertByTesseract:tesseract识别图片验证码
+5. fib:打印斐波那契数列
+6. yanghui:打印杨辉三角
