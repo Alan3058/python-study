@@ -13,4 +13,5 @@ python版本:3.6.2
 5. generator/fib.py:打印斐波那契数列
 6. generator/yanghui.py:打印杨辉三角
 7. imageProcess/skimageProcess.py:skimage图像处理学习
-8. asciiDraw:图片转字符画
+8. imageProcess/asciiDraw.py:图片转字符画
+9. autoanswer/answer_auto.py:自动答题
