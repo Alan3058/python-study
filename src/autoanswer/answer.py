@@ -13,8 +13,11 @@ from autoanswer.config import APP_ID, API_KEY, SECRET_KEY, CONFIG
 
 
 class Answer(object):
-    def __init__(self, name):
+    def __init__(self, name, optionsNum=4):
+        # 名称
         self.name = name
+        # 选项数量
+        self.optionsNum = optionsNum
 
     '''
     获取屏幕截屏图片信息
@@ -46,11 +49,20 @@ class Answer(object):
         data = client.basicGeneral(img)
         data = [v['words'] for v in (data['words_result'])]
         print('data:', data)
+        data = self.filterData(data)
         # 提取问题
-        question = ''.join(data[:-4])
+        question = ''.join(data[:-1 * self.optionsNum])
         # 提取选项
-        options = data[-4:]
+        options = data[-1 * self.optionsNum:]
         return question, options
+
+    '''
+    过滤数据
+    '''
+
+    @abstractmethod
+    def filterData(self, data):
+        pass
 
     '''
     获取答案
@@ -87,16 +99,9 @@ class Answer(object):
     解析答案
     '''
 
+    @abstractmethod
     def parseOptions(self, content, options):
-        map = {}
-        # 得到每个答案的出现次数
-        for option in options:
-            map[option] = content.text.count(option)
-        print('match:', map)
-        # 按出现次数排序，出现次数最多则为答案
-        option = sorted(map, key=lambda k: map[k])[-1]
-        print('result:', option)
-        return option
+        pass
 
     '''
     模拟点击函数
