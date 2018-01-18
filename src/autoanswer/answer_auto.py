@@ -5,6 +5,7 @@ import random
 import subprocess
 from urllib import request, parse
 
+from PIL import Image
 from aip import AipOcr
 from bs4 import BeautifulSoup
 
@@ -28,7 +29,6 @@ def getScreen():
     screen = screen.replace(b'\r\n', b'\n')
     with open('screen.png', 'wb') as f:
         f.write(screen)
-    return screen
 
 
 '''
@@ -36,11 +36,14 @@ def getScreen():
 '''
 
 
-def parseImg(img=None):
-    if not img:
-        # 未传图片，直接从地址获取
-        with open('screen.png', 'rb') as f:
-            img = f.read()
+def parseImg():
+    # 切割图片，去除上层干扰项
+    with Image.open('screen.png') as f:
+        image = f.crop((0, 500, f.size[0], f.size[1]))
+        image.save("screen_new.png")
+    # 未传图片，直接从本地获取，便于调试
+    with open('screen_new.png', 'rb') as f:
+        img = f.read()
     client = AipOcr(APP_ID, API_KEY, SECRET_KEY)
     data = client.basicGeneral(img)
     data = [v['words'] for v in (data['words_result'])]
@@ -49,7 +52,7 @@ def parseImg(img=None):
         data.pop(-1)
     print('data:', data)
     # 提取问题
-    question = ''.join(data[7:-6])
+    question = ''.join(data[:-6])
     # 提取选项
     options = data[-4:]
     return question, options
@@ -77,10 +80,18 @@ def getAnswer(question, options):
     with request.urlopen(url) as f:
         html = f.read()
     soup = BeautifulSoup(html, 'html.parser')
+    # 获取网页内容
+    content = soup.select('#content_left')
+    content = content[0] if content else soup
+    # 去除script和style
+    for tag in content.find_all('script'):
+        tag.decompose()
+    for tag in content.find_all('style'):
+        tag.decompose()
     map = {}
     # 得到每个答案的出现次数
     for option in options:
-        map[option] = soup.text.count(option)
+        map[option] = content.text.count(option)
     print('match:', map)
     # 按出现次数排序，出现次数最多则为答案
     option = sorted(map, key=lambda k: map[k])[-1]
@@ -110,7 +121,7 @@ def run():
         command = input("please input enter key(input q , then exit):")
         if command.lower() == 'q':
             exit()
-        screen = getScreen()
+        getScreen()
         question, options = parseImg()
         # 获取答案
         option = getAnswer(question, options)
