@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+import io
 import os
 import random
 import subprocess
@@ -27,8 +28,24 @@ def getScreen():
     process = subprocess.Popen('adb shell screencap -p', shell=True, stdout=subprocess.PIPE)
     screen = process.stdout.read()
     screen = screen.replace(b'\r\n', b'\n')
-    with open('screen.png', 'wb') as f:
-        f.write(screen)
+    return screen
+
+
+'''
+处理图片
+'''
+
+
+def processImg(screen):
+    tmp = io.BytesIO(screen)
+    with Image.open(tmp) as f:
+        # 切割图片，拼接问题和选项
+        imageQuestion = f.crop((0, 500, f.size[0], 900))
+        imageOptions = f.crop((0, 960, f.size[0], 1700))
+        newImg = Image.new("RGB", (f.size[0], 1140))
+        newImg.paste(imageQuestion, (0, 0))
+        newImg.paste(imageOptions, (0, 400))
+        newImg.save("screen.png")
 
 
 '''
@@ -37,22 +54,15 @@ def getScreen():
 
 
 def parseImg():
-    # 切割图片，去除上层干扰项
-    with Image.open('screen.png') as f:
-        image = f.crop((0, 500, f.size[0], f.size[1]))
-        image.save("screen_new.png")
     # 未传图片，直接从本地获取，便于调试
-    with open('screen_new.png', 'rb') as f:
+    with open('screen.png', 'rb') as f:
         img = f.read()
     client = AipOcr(APP_ID, API_KEY, SECRET_KEY)
     data = client.basicGeneral(img)
     data = [v['words'] for v in (data['words_result'])]
-    # 过滤掉页脚
-    if '本题目由' in data[-1]:
-        data.pop(-1)
     print('data:', data)
     # 提取问题
-    question = ''.join(data[:-6])
+    question = ''.join(data[:-4])
     # 提取选项
     options = data[-4:]
     return question, options
@@ -121,12 +131,13 @@ def run():
         command = input("please input enter key(input q , then exit):")
         if command.lower() == 'q':
             exit()
-        getScreen()
+        screen = getScreen()
+        processImg(screen)
         question, options = parseImg()
         # 获取答案
         option = getAnswer(question, options)
         # 点击对应答案
-        click(CONFIG[options.index(option)])
+        # click(CONFIG[options.index(option)])
 
 
 if __name__ == '__main__':
