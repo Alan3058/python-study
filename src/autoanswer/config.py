@@ -5,6 +5,7 @@ tnwz:头脑王者
 qdt:趣答题
 cddh:冲顶大会
 bwyx:百万英雄
+可扩展增加手机机型适配
 '''
 CONFIG = {'tnwz': [{'x': 250, 'y': 970, 'offsetx': 580, 'offsety': 140},
                    {'x': 250, 'y': 1160, 'offsetx': 580, 'offsety': 140},

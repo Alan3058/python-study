@@ -28,7 +28,7 @@ class Answer(object):
         process = subprocess.Popen('adb shell screencap -p', shell=True, stdout=subprocess.PIPE)
         screen = process.stdout.read()
         if not screen:
-            logging.error('connect phone failed!')
+            logging.error('connect phone failed，please check usb interface or adb connect!')
         screen = screen.replace(b'\r\n', b'\n')
         logging.debug('get screen info finished!')
         return screen
