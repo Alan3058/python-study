@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-
+import logging
 import os
 import random
 import subprocess
@@ -26,6 +26,8 @@ class Answer(object):
     def getScreen(self):
         process = subprocess.Popen('adb shell screencap -p', shell=True, stdout=subprocess.PIPE)
         screen = process.stdout.read()
+        if not screen:
+            logging.error('connect phone failed!---------')
         screen = screen.replace(b'\r\n', b'\n')
         return screen
 

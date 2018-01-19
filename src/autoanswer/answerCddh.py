@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import io
+import re
 
 from PIL import Image
 
@@ -39,10 +40,11 @@ class AnswerCddh(Answer):
     '''
 
     def parseOptions(self, content, options):
+        seqs = r"(A|B|C|D)(、|.)"
         map = {}
         # 得到每个答案的出现次数
         for option in options:
-            map[option] = content.text.count(option)
+            map[option] = content.text.count(re.sub(seqs, '', option))
         print('match:', map)
         # 按出现次数排序，出现次数最多则为答案
         option = sorted(map, key=lambda k: map[k])[-1]
