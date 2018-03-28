@@ -24,11 +24,13 @@ class Answer(object):
     '''
 
     def getScreen(self):
+        logging.debug('prepare get screen!')
         process = subprocess.Popen('adb shell screencap -p', shell=True, stdout=subprocess.PIPE)
         screen = process.stdout.read()
         if not screen:
-            logging.error('connect phone failed!---------')
+            logging.error('connect phone failed，please check usb interface or adb connect!')
         screen = screen.replace(b'\r\n', b'\n')
+        logging.debug('get screen info finished!')
         return screen
 
     '''
@@ -44,18 +46,19 @@ class Answer(object):
     '''
 
     def parseImg(self):
+        logging.debug('prepare parse image!')
         # 未传图片，直接从本地获取，便于调试
         with open('screen.png', 'rb') as f:
             img = f.read()
         client = AipOcr(APP_ID, API_KEY, SECRET_KEY)
         data = client.basicGeneral(img)
         data = [v['words'] for v in (data['words_result'])]
-        print('data:', data)
         data = self.filterData(data)
         # 提取问题
         question = ''.join(data[:-1 * self.optionsNum])
         # 提取选项
         options = data[-1 * self.optionsNum:]
+        logging.debug('parse image finished!')
         return question, options
 
     '''
@@ -71,6 +74,7 @@ class Answer(object):
     '''
 
     def getAnswer(self, question, options):
+        logging.debug('prepare get answer!')
         headers = {
             'User-Agent': 'Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.11 (KHTML, like Gecko) Chrome/23.0.1271.64 Safari/537.11',
             'Accept': 'text/html;q=0.9,*/*;q=0.8',
@@ -95,7 +99,10 @@ class Answer(object):
             tag.decompose()
         for tag in content.find_all('style'):
             tag.decompose()
-        return self.parseOptions(content, options)
+        logging.debug('get answer content finished!')
+        option = self.parseOptions(content, options)
+        logging.debug('match answer finished!')
+        return option
 
     '''
     解析答案
@@ -110,10 +117,12 @@ class Answer(object):
     '''
 
     def click(self, path):
+        logging.debug('prepare calculate click point!')
         fmx = random.randint(path['x'], path['x'] + path['offsetx'])
         fmy = random.randint(path['y'], path['y'] + path['offsety'])
         cmd = 'adb shell input tap %s %s' % (fmx, fmy)
         os.system(cmd)
+        logging.debug('click finished!')
 
     '''
     运行入口
